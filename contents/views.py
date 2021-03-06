@@ -22,10 +22,16 @@ def home(request):
             u = get_object_or_404(User, username=user)
             posts = Post.objects.filter(user=u)
             for post in posts:
+                profile = get_object_or_404(Profile, user=post.user)
+                user_profile = ProfileSerializer(profile, many=False)
+                is_current_user_liked = False
+                if any(x["id"] == request.user.id for x in post.likes):
+                    is_current_user_liked = True
                 post = PostSerializer(post, many=False)
-                post_list.append(post.data)
+                post_list.append(
+                    {"post": post.data, "is_current_user_liked": is_current_user_liked, "profile": user_profile.data})
             post_list = sorted(
-                post_list, key=lambda x: x["timestamp"], reverse=True)
+                post_list, key=lambda x: x["post"]["timestamp"], reverse=True)
         return Response(post_list, status=status.HTTP_200_OK)
     else:
         return Response({"error": "Authentication credential not provided"}, status=status.HTTP_401_UNAUTHORIZED)

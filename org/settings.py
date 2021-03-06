@@ -27,7 +27,7 @@ SECRET_KEY = '#fev!+u!6ny-)v=gs6)2i#msq$_0azy!13x*v+=e1g@54$cqjk'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-'192.168.2.133'
+    '*'
 ]
 
 
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'follows',
     'contents',
     'corsheaders',
+    'channels',
 ]
 
 REST_FRAMEWORK = {
@@ -94,6 +95,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'org.wsgi.application'
+ASGI_APPLICATION = "org.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 
 # Database

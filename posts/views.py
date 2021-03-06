@@ -1,3 +1,4 @@
+import asyncio
 import json
 from django.db.models.fields.json import JSONExact
 from rest_framework.utils.serializer_helpers import JSONBoundField
@@ -5,6 +6,7 @@ from users.serializers import ProfileSerializer
 from users.models import Profile
 from django.http.response import Http404
 from posts.serializers import PostSerializer
+import websockets
 from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view
 from .models import Post
@@ -87,7 +89,8 @@ def like_post(request, post_id):
         if any(x["username"] == request.user.username for x in post.likes):
             return Response({"error": "Post already liked"})
         else:
-            post.likes.append({"username": request.user.username})
+            post.likes.append(
+                {"username": request.user.username, "id": request.user.id})
             post.save()
             post = PostSerializer(post, many=False)
             return Response({"data": post.data, "likes_count": len(post.data["likes"])}, status=HTTP_200_OK)
@@ -101,7 +104,8 @@ def unlike_post(request, post_id):
     if request.user.is_authenticated:
         post = get_object_or_404(Post, pk=post_id)
         if any(x["username"] == request.user.username for x in post.likes):
-            post.likes.remove({"username": request.user.username})
+            post.likes.remove(
+                {"username": request.user.username, "id": request.user.id})
             post.save()
             post = PostSerializer(post, many=False)
             return Response({"data": post.data, "likes_count": len(post.data["likes"])}, status=HTTP_200_OK)
