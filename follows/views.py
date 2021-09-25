@@ -16,19 +16,19 @@ def follow_user(request, follow_username):
     if request.user.is_authenticated and (request.user != follow_user):
         follow_user_profile = Profile.objects.filter(
             user=follow_user).first()
-        if any(x["username"] == request.user.username for x in follow_user_profile.followers):
+        if any(x["id"] == request.user.id for x in follow_user_profile.followers):
             return Response({"message": "User already followed"}, status=HTTP_200_OK)
         else:
+            request_user_profile = get_object_or_404(
+                Profile, user=request.user)
             # Adding requesting user to the follower list
             follow_user_profile.followers.append(
-                {"username": request.user.username})
+                {"username": request.user.username, "id": request.user.id, "profile_picture":request_user_profile.profile_picture.url if request_user_profile.profile_picture else None})
             follow_user_profile.save()
 
             # Adding followed user to the following list
-            request_user_profile = get_object_or_404(
-                Profile, user=request.user)
             request_user_profile.following.append(
-                {"username": follow_user.username})
+                {"username": follow_user.username, "id": follow_user.id, "profile_picture": follow_user_profile.profile_picture.url if follow_user_profile.profile_picture else None})
             request_user_profile.save()
             request_user_profile = ProfileSerializer(
                 request_user_profile, many=False)
@@ -43,26 +43,27 @@ def unfollow_user(request, unfollow_username):
     if request.user.is_authenticated and (request.user != unfollow_user):
         unfollow_user_profile = Profile.objects.filter(
             user=unfollow_user).first()
-        if any(x["username"] == request.user.username for x in unfollow_user_profile.followers):
-            # Removing requested user from user followers list
-            unfollow_user_profile.followers.remove(
-                {"username": request.user.username})
+        for item in unfollow_user_profile.followers:
+            if(item["id"] == request.user.id):
+                unfollow_user_profile.followers.remove(item)
             unfollow_user_profile.save()
+        request_user_profile = get_object_or_404(
+            Profile, user=request.user)
+        # Removing requested user from user followers list
+        
+        
 
-            # Removing unfollow user from requested user following list
-            request_user_profile = get_object_or_404(
-                Profile, user=request.user)
-            request_user_profile.following.remove(
-                {"username": unfollow_user.username})
-            unfollow_user_profile = ProfileSerializer(
-                unfollow_user_profile, many=False)
+        # Removing unfollow user from requested user following list
+        for item in request_user_profile.following:
+            if(item["id"] == unfollow_user.id):
+                request_user_profile.following.remove(item)
             request_user_profile.save()
-            request_user_profile = ProfileSerializer(
-                request_user_profile, many=False)
-            return Response(request_user_profile.data, status=HTTP_200_OK)
-        else:
-            return Response({"message": "User not followed"}, status=HTTP_404_NOT_FOUND)
-
+        unfollow_user_profile = ProfileSerializer(
+            unfollow_user_profile, many=False)
+        request_user_profile.save()
+        request_user_profile = ProfileSerializer(
+            request_user_profile, many=False)
+        return Response(request_user_profile.data, status=HTTP_200_OK)
     else:
         return Response({"error": "Authentication credential not found"}, status=HTTP_401_UNAUTHORIZED)
 
