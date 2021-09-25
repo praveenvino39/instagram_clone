@@ -16,11 +16,12 @@ def follow_user(request, follow_username):
     if request.user.is_authenticated and (request.user != follow_user):
         follow_user_profile = Profile.objects.filter(
             user=follow_user).first()
+        request_user_profile = get_object_or_404(
+            Profile, user=request.user)
         if any(x["id"] == request.user.id for x in follow_user_profile.followers):
-            return Response({"message": "User already followed"}, status=HTTP_200_OK)
-        else:
-            request_user_profile = get_object_or_404(
-                Profile, user=request.user)
+            unfollow_user(request, follow_username) 
+            return Response({"data": "User unfollowed", "status": True, "action": "USER_UNFOLLOWED"}, status=HTTP_200_OK)
+        if follow_user_profile.is_private == False:
             # Adding requesting user to the follower list
             follow_user_profile.followers.append(
                 {"username": request.user.username, "id": request.user.id, "profile_picture":request_user_profile.profile_picture.url if request_user_profile.profile_picture else None})
@@ -32,12 +33,19 @@ def follow_user(request, follow_username):
             request_user_profile.save()
             request_user_profile = ProfileSerializer(
                 request_user_profile, many=False)
-            return Response(request_user_profile.data, status=HTTP_200_OK)
+            return Response({"data": "User followed", "status": True, "action": "USER_FOLLOWED"}, status=HTTP_200_OK)
+        else:
+            if any(x["id"] == request.user.id for x in follow_user_profile.followers):
+                return Response({"data": "Follow request sent", "status": True, "action": "REQUEST_SENT"}, status=HTTP_200_OK)
+            else:
+                follow_user_profile.follow_request.append(
+                    {"username": request.user.username, "id": request.user.id, "profile_picture":request_user_profile.profile_picture.url if request_user_profile.profile_picture else None}
+                )
+                follow_user_profile.save()
+                return Response({"data": "Follow request sent", "status": True, "action": "REQUEST_SENT"}, status=HTTP_200_OK)
     else:
-        return Response({"error": "Authentication credential not found"}, status=HTTP_401_UNAUTHORIZED)
+        return Response({"data": "Authentication credential not found", "status": False, "action": "NOT_FOUND"}, status=HTTP_401_UNAUTHORIZED)
 
-
-@api_view(["GET"])
 def unfollow_user(request, unfollow_username):
     unfollow_user = User.objects.filter(username=unfollow_username).first()
     if request.user.is_authenticated and (request.user != unfollow_user):
