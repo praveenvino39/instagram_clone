@@ -26,7 +26,6 @@ six==1.16.0
 sqlparse==0.4.2
 toml==0.10.2
 Twisted==21.7.0
-twisted-iocpsupport==1.0.2
 txaio==21.2.1
 typing-extensions==3.6.2
 websockets==9.1
