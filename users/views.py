@@ -21,12 +21,13 @@ def registration(request):
             user_profile = Profile(user=user)
             user_profile.save()
             user_profile = ProfileSerializer(user_profile, many=False)
-            return Response(user_profile.data, status=HTTP_201_CREATED)
+            user = UserSerializer(user,many=False)
+            return Response({"data": {"user_profile":user_profile.data, "user_data": user.data}, "status": True, "message": "User created successfully"}, status=HTTP_201_CREATED)
         except IntegrityError:
-            return Response({"message": "Username already exist","data": {}}, status = HTTP_400_BAD_REQUEST)
+            return Response({"message": "Username already exist","data": {}, "status": False}, status = HTTP_400_BAD_REQUEST)
 
     else:
-        return Response({"message": "Username or Password is empty","data": {"username": "This field shouldn't be empty", "password": "This field shouldn't be empty"}}, status = HTTP_400_BAD_REQUEST)
+        return Response({"message": "Username or Password is empty","data": {}, "status":False}, status = HTTP_400_BAD_REQUEST)
 
 
 @api_view(['PUT'])
