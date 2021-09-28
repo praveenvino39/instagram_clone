@@ -32,6 +32,7 @@ def getToken(request):
         try:
             user = get_object_or_404(User, username=request.data.get("username"))
             token, created = Token.objects.get_or_create(user=user)
+            user_profile = get_object_or_404(Profile, user=user)
             user_profile = ProfileSerializer(user_profile, many=False)
             user = UserSerializer(user,many=False)
             return Response({"data": {"user_profile":user_profile.data, "user_data": user.data}, "status": True, "message": "User created successfully"}, status=HTTP_201_CREATED)
