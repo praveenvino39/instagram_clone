@@ -34,15 +34,13 @@ def registration(request):
 @api_view(['POST'])
 def getToken(request):
     if request.data.get("username") and request.data.get("password"):
-        try:
-            user = get_object_or_404(User, username=request.data.get("username"))
-            token, created = Token.objects.get_or_create(user=user)
-            user_profile = get_object_or_404(Profile, user=user)
-            user_profile = ProfileSerializer(user_profile, many=False)
-            user = UserSerializer(user,many=False)
-            return Response({"data": {"user_profile":user_profile.data, "user_data": user.data, "token": token.key}, "status": True, "message": "User created successfully"}, status=HTTP_201_CREATED)
-        except IntegrityError:
-            return Response({"message": "Username already exist","data": {}, "status": False}, status = HTTP_200_OK)
+        user = get_object_or_404(User, username=request.data.get("username"))
+        token, created = Token.objects.get_or_create(user=user)
+        user_profile = get_object_or_404(Profile, user=user)
+        user_profile = ProfileSerializer(user_profile, many=False)
+        user = UserSerializer(user,many=False)
+        return Response({"data": {"user_profile":user_profile.data, "user_data": user.data, "token": token.key}, "status": True, "message": "User created successfully"}, status=HTTP_201_CREATED)
+
 
     else:
         return Response({"message": "Username or Password is empty","data": {}, "status":False}, status = HTTP_200_OK)
