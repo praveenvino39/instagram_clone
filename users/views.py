@@ -1,4 +1,3 @@
-from re import I
 from posts.serializers import PostSerializer
 from posts.models import Post
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_404_NOT_FOUND
@@ -10,18 +9,24 @@ from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
-from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.models import  Token
 from django.db import IntegrityError
 
 @api_view(['POST'])
 def registration(request):
     if request.data.get("username") and request.data.get("password"):
-        user = get_object_or_404(User, username=request.data.get("username"))
-        token, created = Token.objects.get_or_create(user=user)
-        user_profile = Profile(user=user)
-        user_profile = ProfileSerializer(user_profile, many=False)
-        user = UserSerializer(user,many=False)
-        return Response({"data": {"user_profile":user_profile.data, "user_data": user.data, "token":token.key}, "status": True, "message": "Loggin Successfully"}, status=HTTP_200_OK)
+        try:
+            user = User.objects.create(username=request.data.get(
+                "username"), password=make_password(request.data.get("password")), email="")
+            user.save()
+            user_profile = Profile(user=user)
+            user_profile.save()
+            user_profile = ProfileSerializer(user_profile, many=False)
+            user = UserSerializer(user,many=False)
+            return Response({"data": {"user_profile":user_profile.data, "user_data": user.data}, "status": True, "message": "User created successfully"}, status=HTTP_201_CREATED)
+        except IntegrityError:
+            return Response({"message": "Username already exist","data": {}, "status": False}, status = HTTP_200_OK)
+
     else:
         return Response({"message": "Username or Password is empty","data": {}, "status":False}, status = HTTP_200_OK)
 
@@ -35,7 +40,7 @@ def getToken(request):
             user_profile = get_object_or_404(Profile, user=user)
             user_profile = ProfileSerializer(user_profile, many=False)
             user = UserSerializer(user,many=False)
-            return Response({"data": {"user_profile":user_profile.data, "user_data": user.data}, "status": True, "message": "User created successfully"}, status=HTTP_201_CREATED)
+            return Response({"data": {"user_profile":user_profile.data, "user_data": user.data, "token": token.key}, "status": True, "message": "User created successfully"}, status=HTTP_201_CREATED)
         except IntegrityError:
             return Response({"message": "Username already exist","data": {}, "status": False}, status = HTTP_200_OK)
 
