@@ -1,8 +1,9 @@
 import asyncio
 import json
 from django.db.models.fields.json import JSONExact
+from rest_framework import status
 from rest_framework.utils.serializer_helpers import JSONBoundField
-from users.serializers import ProfileSerializer
+from users.serializers import ProfileSerializer, UserSerializer
 from users.models import Profile
 from django.http.response import Http404
 from posts.serializers import PostSerializer
@@ -66,6 +67,7 @@ def update_post(request, post_id):
             return Response("You dont\'t have permission to update this post")
     else:
         return Response("Authentication credentials not provided")
+
 
 
 @api_view(['DELETE'])

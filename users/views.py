@@ -140,3 +140,23 @@ def user_detail(request, username):
         posts = PostSerializer(posts, many=True)
         user_profile = ProfileSerializer(user_profile, many=False)
         return Response({"data": user_profile.data, "posts": posts.data, "post_count": len(posts.data), "follower_count": follower_count, "following_count": following_count}, status=HTTP_200_OK)
+
+
+@api_view(['GET'])
+def profile(request):
+    if request.user.is_authenticated:
+        user = User.objects.filter(id=request.user.id).first()
+        profile = Profile.objects.filter(user=user).first()
+        if user is not None:
+            user = UserSerializer(user, many=False)
+            if profile is not None:
+                profile = ProfileSerializer(profile, many=False)
+                return Response({"status": True, "message": "Success", "data": {"profile": profile.data}}, status=HTTP_200_OK)
+            else:
+                return Response({"status": True, "message": "Success", "data": {"profile":{}}}, status=HTTP_200_OK)
+
+        else:
+            return Response({"status": True, "message": "User not found", "data": {}})
+    else:
+        return Response({"data": {}, "status": "false", "message": "user not authenticated"})
+
