@@ -30,11 +30,15 @@ def get_user_post(request, username):
 @api_view(['POST'])
 def create_post(request):
     if request.user.is_authenticated:
+        if request.data.get("is_video") == "YES":
+            is_video = True
+        else:
+            is_video = False
         post = Post(
             user=request.user,
             video_url=request.data.get("post_url"),
             post_image=request.data.get("image"),
-            is_video=request.data.get("is_video"),
+            is_video=is_video,
             caption=request.data.get("caption")
         )
         post.save()
