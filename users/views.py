@@ -153,7 +153,7 @@ def profile(request):
                 profile = ProfileSerializer(profile, many=False)
                 posts = Post.objects.filter(user=request.user)
                 if len(posts) != 0:
-                    posts = PostSerializer(posts, many=False)
+                    posts = PostSerializer(posts, many=True)
                     return Response({"status": True, "message": "Success", "data": {"profile": profile.data, "post": posts.data}}, status=HTTP_200_OK)
                 else:
                     return Response({"status": True, "message": "Success", "data": {"profile": profile.data, "post": []}}, status=HTTP_200_OK)
