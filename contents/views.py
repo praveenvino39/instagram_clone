@@ -54,8 +54,8 @@ def search(request):
         for user in users:
             user = UserSerializer(user, many=False)
             user_list.append(user.data)
-        user_list = sorted(
-            user_list, key=lambda x: x["last_login"], reverse=True)
+        # user_list = sorted(
+        #     user_list, key=lambda x: x["last_login"], reverse=True)
         return Response({"posts": {"post_result": post_list, "result_length": len(post_list)}, "users": {"user_result": user_list, "result_length": len(user_list)}, }, status=status.HTTP_200_OK)
     else:
         return Response({"keyword": "This field is required."}, status=status.HTTP_400_BAD_REQUEST)
